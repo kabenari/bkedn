@@ -1,8 +1,11 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const zod = require("zod");
 const jwtPassword = "123456";
 
 const app = express();
+
+app.use(express.json())
 
 const ALL_USERS = [
   {
@@ -23,8 +26,18 @@ const ALL_USERS = [
 ];
 
 function userExists(username, password) {
-  // write logic to return true or false if this user exists
-  // in ALL_USERS array
+    
+    var ans = false;
+
+    for(let i = 0;i<ALL_USERS.length;i++){
+        if(ALL_USERS[i].username === username && ALL_USERS[i].password === password){
+            ans = true;
+        }else{
+            ans = false;
+        }
+    }
+
+    return ans;
 }
 
 app.post("/signin", function (req, res) {
@@ -35,25 +48,21 @@ app.post("/signin", function (req, res) {
     return res.status(403).json({
       msg: "User doesnt exist in our in memory db",
     });
+  }else{
+    var token = jwt.sign({ username: username }, "shhhhh");
+    return res.json({
+      token
+    }); 
   }
-
-  var token = jwt.sign({ username: username }, "shhhhh");
-  return res.json({
-    token,
-  });
 });
 
 app.get("/users", function (req, res) {
   const token = req.headers.authorization;
-  try {
     const decoded = jwt.verify(token, jwtPassword);
     const username = decoded.username;
-    // return a list of users other than this username
-  } catch (err) {
-    return res.status(403).json({
-      msg: "Invalid token",
-    });
-  }
+    res.json({
+        users : ALL_USERS.filter
+        })
 });
 
 app.listen(3000)
